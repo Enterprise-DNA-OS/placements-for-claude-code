@@ -1,11 +1,44 @@
 [
   {
-    "name": "example",
-    "title": "TODO(author): the first document this industry must produce",
-    "for_each": "select gen_random_uuid() as id, 'Example' as name",
-    "file": "name",
+    "name": "placement-confirmation",
+    "title": "Placement confirmation",
+    "for_each": "select x.id, x.code || ' ' || s.name as label from placements x join students s on s.id = x.student_id where x.status in ('allocated', 'confirmed') and x.ends_on >= current_date order by x.starts_on",
+    "file": "label",
     "sections": [
-      { "title": "Details", "sql": "select 'replace me' as item, $1::text as record_id" }
+      { "title": "Your placement", "layout": "record", "sql": "select p.student, p.programme, p.site, p.organisation, si.suburb, p.starts_on as first_day, p.ends_on as last_day, p.planned_hours as hours, coalesce(p.supervisor, 'to be confirmed by the site') as supervisor, o.contact_name as site_contact, o.phone as site_phone, p.code as reference from v_placements p join sites si on si.code = p.site_code join organisations o on o.id = p.organisation_id where p.id = $1" },
+      { "title": "Checks the site will ask to see", "note": "Bring the originals or have them on your phone on day one. Anything marked ACTION NEEDED must be fixed before you start.", "sql": "select c.requirement_name as check, coalesce(c.expires_on::text, case when c.state = 'missing' then '' else 'no expiry' end) as valid_until, case when c.state = 'missing' then 'ACTION NEEDED: not on file' when c.expires_on < x.ends_on then 'ACTION NEEDED: runs out before your last day' else 'ready' end as status from placements x join v_check_status c on c.student_id = x.student_id where x.id = $1 order by c.requirement" },
+      { "title": "Before you start", "sql": "select item from (values (1, 'Read the site orientation pack and the uniform policy.'), (2, 'Log your hours each week and ask your supervisor to sign them off before the next week starts.'), (3, 'Report any incident or injury to your supervisor and to the placement office on the same day.')) v(n, item) where $1::uuid is not null order by n" }
+    ]
+  },
+  {
+    "name": "student-compliance-record",
+    "title": "Student pre-placement compliance record",
+    "for_each": "select distinct s.id, s.code || ' ' || s.name as label from students s join placements x on x.student_id = s.id where x.status in ('allocated', 'confirmed') and x.ends_on >= current_date order by label",
+    "file": "label",
+    "sections": [
+      { "title": "Student", "layout": "record", "sql": "select s.name, s.student_number, pg.name as programme, s.year_level, current_date as record_date from students s join programmes pg on pg.id = s.programme_id where s.id = $1" },
+      { "title": "Checks sighted by the placement office", "sql": "select c.requirement_name as check, c.completed_on, coalesce(c.expires_on::text, case when c.state = 'missing' then '' else 'no expiry' end) as expires, upper(c.state) as state, c.source from v_check_status c where c.student_id = $1 order by c.requirement" },
+      { "title": "Placements this record covers", "sql": "select p.code, p.site, p.starts_on, p.ends_on from v_live_placements p where p.student_id = $1 order by p.starts_on" }
+    ]
+  },
+  {
+    "name": "hours-statement",
+    "title": "Statement of placement hours",
+    "for_each": "select s.id, s.code || ' ' || s.name as label from students s join programmes pg on pg.id = s.programme_id where s.status = 'active' and s.year_level >= pg.final_year order by s.code",
+    "file": "label",
+    "sections": [
+      { "title": "Student", "layout": "record", "sql": "select h.student, h.programme, h.required_hours as hours_required, trim_scale(h.signed_hours) as hours_signed_off, trim_scale(h.unsigned_hours) as hours_awaiting_sign_off, trim_scale(h.planned_hours) as hours_still_planned, case when h.shortfall > 0 then trim_scale(h.shortfall) || ' hours short on current plans' else 'on track' end as position, h.hours_source as requirement from v_hours h where h.student_id = $1" },
+      { "title": "Placements", "sql": "select p.code, p.site, p.starts_on, p.ends_on, p.planned_hours as planned, coalesce((select trim_scale(sum(t.hours)) from timesheets t where t.placement_id = p.id and t.signed_off_on is not null), 0) as signed_off, coalesce(p.result, p.stage) as outcome from v_placements p where p.student_id = $1 and p.status not in ('cancelled') order by p.starts_on" }
+    ]
+  },
+  {
+    "name": "host-schedule",
+    "title": "Students coming to you",
+    "for_each": "select distinct o.id, o.code || ' ' || o.name as label from organisations o join v_live_placements p on p.organisation_id = o.id order by label",
+    "file": "label",
+    "sections": [
+      { "title": "Host", "layout": "record", "sql": "select o.name, o.contact_name, a.code as agreement, a.expires_on as agreement_ends, current_date as schedule_date from organisations o left join v_agreements a on a.organisation_id = o.id where o.id = $1" },
+      { "title": "Students on placement or starting", "sql": "select p.student, p.programme, s.year_level, p.site, p.starts_on, p.ends_on, p.planned_hours as hours, coalesce(p.supervisor, 'please nominate') as supervisor, case when exists (select 1 from v_readiness r where r.code = p.code) then 'checks to follow' else 'all checks sighted' end as checks from v_live_placements p join students s on s.id = p.student_id where p.organisation_id = $1 order by p.starts_on, p.student" }
     ]
   }
 ]

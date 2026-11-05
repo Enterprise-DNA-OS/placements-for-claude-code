@@ -1,10 +1,9 @@
 {
-  "_": "Your business on every document and view. Change these and run `npm run docs` or `npm run view`.",
-  "business_name": "Your Business",
-  "logo_path": "",
-  "primary": "#6654f5",
-  "accent": "#ca5a8b",
+  "business_name": "Southern Cross Health College",
+  "primary": "#1d4e89",
+  "accent": "#2a9d8f",
   "ink": "#0b0c18",
   "paper": "#ffffff",
-  "footer_line": "Prepared with Placements for Claude Code."
+  "logo_path": "",
+  "footer_line": "Synthetic demonstration college. Not a real provider."
 }

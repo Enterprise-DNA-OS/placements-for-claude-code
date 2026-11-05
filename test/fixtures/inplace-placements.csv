@@ -1,0 +1,5 @@
+Placement ID,Student ID,Agency,Site,Supervisor,Start Date,End Date,Hours,Hours Completed,Status,Result
+IP-9001,SCH25101,Northern Harbour Local Health District,"Royal Harbour Hospital, Ward 7B Surgical",Karen Mitchell,02/03/2026,27/03/2026,160,160,Completed,Satisfactory
+IP-9002,SCH25102,Harbourside Mental Health Service,Acute Inpatient Unit,Ravi Kumar,02/03/2026,27/03/2026,160,152,Completed,Satisfactory
+IP-9003,SCH25102,Harbourside Mental Health Service,Acute Inpatient Unit,Ravi Kumar,01/02/2027,26/02/2027,160,,Confirmed,
+IP-9004,SCH99999,Unknown Agency,Unknown Site,,01/02/2027,26/02/2027,160,,Confirmed,

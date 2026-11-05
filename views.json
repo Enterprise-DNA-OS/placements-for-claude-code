@@ -1,14 +1,34 @@
 [
   {
     "name": "week",
-    "title": "This week",
-    "subtitle": "Placements for Claude Code: what needs attention, rendered by npm run view",
+    "title": "This week in the placement office",
+    "subtitle": "What needs the office, worst first. Rendered by npm run view.",
     "sections": [
-      {
-        "title": "Needs attention",
-        "note": "TODO(author): point this at the industry's attention view (overdue, stuck, quiet).",
-        "sql": "select 'replace me' as item, 'TODO(author)' as why"
-      }
+      { "title": "Needs attention", "note": "Checks not ready, placements without agreement cover or a trained supervisor, unreported incidents, students short of hours or unplaced, late assessments and unsigned hours.", "sql": "select issue, student, about, on_date, detail from v_attention order by severity, on_date nulls first" },
+      { "title": "Starting in the next 30 days", "sql": "select p.starts_on, p.student, p.programme, p.site, coalesce(p.supervisor, 'NONE') as supervisor, p.status, case when exists (select 1 from v_readiness r where r.code = p.code) then 'NOT READY' else 'ready' end as checks from v_live_placements p where p.starts_on between current_date and current_date + 30 order by p.starts_on, p.student" },
+      { "title": "On placement now", "sql": "select p.student, p.site, p.supervisor, p.ends_on, trim_scale(coalesce((select sum(t.hours) from timesheets t join placements x on x.id = t.placement_id where x.code = p.code), 0)) as hours_logged, p.planned_hours from v_live_placements p where p.stage = 'on placement' order by p.ends_on" }
+    ]
+  },
+  {
+    "name": "capacity",
+    "title": "Places and students",
+    "subtitle": "Rounds that have not finished: what hosts offered, who is placed and who is still waiting.",
+    "sections": [
+      { "title": "Rounds", "sql": "select code, name, starts_on, ends_on, places_offered, placed, waiting from v_capacity order by starts_on" },
+      { "title": "Students waiting", "sql": "select round, starts_on, student, programme, campus from v_unplaced order by starts_on, student" },
+      { "title": "Places still open", "sql": "select round, starts_on, site, organisation, places, filled from v_open_places order by starts_on" },
+      { "title": "Hosts", "note": "Places offered in the last 12 months against the 12 before.", "sql": "select name as host, replace(kind, '_', ' ') as kind, places_last_12m, places_prior_12m, last_round_on from v_site_trend order by places_last_12m desc" }
+    ]
+  },
+  {
+    "name": "compliance",
+    "title": "Compliance",
+    "subtitle": "Checks, agreements, insurance, supervision and hours.",
+    "sections": [
+      { "title": "Placements with a check not ready", "sql": "select student, site, starts_on, ends_on, requirement_name as check, problem, expires_on from v_readiness order by starts_on" },
+      { "title": "Host agreements", "sql": "select organisation, code as agreement, expires_on, days_left, insurance_expires_on, renewal, live_placements, booked_past_end from v_agreements order by days_left nulls first" },
+      { "title": "Supervision gaps", "sql": "select student, site, starts_on, supervisor, problem from v_supervision_gaps order by starts_on" },
+      { "title": "Final-year students short of hours", "sql": "select student, programme, required_hours, trim_scale(projected_hours) as projected, trim_scale(shortfall) as short from v_hours where year_level >= final_year and shortfall > 0 order by shortfall desc" }
     ]
   }
 ]

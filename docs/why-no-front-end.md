@@ -15,10 +15,11 @@ That layer used to be the whole product, because talking to a database was hard.
 
 - **A visual board.** Stages are a table you ask about, not cards you drag.
 - **A phone app.** It runs where Claude Code runs.
+- **A student and supervisor portal.** Students send their evidence to the office and supervisors sign hours by email or on paper; the office records it here. If you want students uploading certificates themselves, that is a portal Enterprise DNA builds into your version.
 - **A vendor help desk.** This is open source. Enterprise DNA supports the installed version for businesses that want someone to call.
 
 ## Who this fits
 
-Small teams who already use Claude Code, or who would rather learn to ask than learn another interface. If your team needs a screen to look at all day, keep InPlace. If you need the answers more than the screens, this is cheaper, faster and yours.
+Placement offices of two to ten people who already use Claude Code, or who would rather learn to ask than learn another interface. If your team needs a screen to look at all day, keep InPlace. If you need the answers more than the screens, this is cheaper, faster and yours.
 
 Installed and run for you: https://enterprisedna.co/omni/instead-of/inplace
